@@ -336,7 +336,7 @@
 						}
 					},
 					{
-						"name": "ForEach1",
+						"name": "ForEach row in config file",
 						"type": "ForEach",
 						"dependsOn": [
 							{
@@ -354,7 +354,7 @@
 							},
 							"activities": [
 								{
-									"name": "copy",
+									"name": "copy from sftp to ntfs",
 									"type": "Copy",
 									"dependsOn": [],
 									"policy": {
