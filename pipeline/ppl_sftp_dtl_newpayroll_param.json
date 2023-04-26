@@ -40,7 +40,7 @@
 				}
 			},
 			{
-				"name": "ForEach row in config file",
+				"name": "ForEach1",
 				"type": "ForEach",
 				"dependsOn": [
 					{
