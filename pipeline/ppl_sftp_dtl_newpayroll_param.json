@@ -58,7 +58,7 @@
 					},
 					"activities": [
 						{
-							"name": "copy",
+							"name": "copy from sftp to ntfs",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
