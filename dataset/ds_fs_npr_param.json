@@ -1,0 +1,22 @@
+{
+	"name": "ds_fs_npr_param",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_fs_npr_param",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"server": "@item().server",
+				"path": "@item().path",
+				"user": "@item().bizuser"
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

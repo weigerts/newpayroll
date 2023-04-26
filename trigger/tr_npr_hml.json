@@ -1,0 +1,53 @@
+{
+	"name": "tr_npr_hml",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "ppl_sftp_dtl_newpayroll_param",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"p_config_file": "config-HML3.csv"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Week",
+				"interval": 1,
+				"startTime": "2023-03-27T10:05:00",
+				"endTime": "2023-04-30T11:57:00",
+				"timeZone": "E. South America Standard Time",
+				"schedule": {
+					"minutes": [
+						5
+					],
+					"hours": [
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18
+					],
+					"weekDays": [
+						"Monday",
+						"Tuesday",
+						"Wednesday",
+						"Thursday",
+						"Friday"
+					]
+				}
+			}
+		}
+	}
+}

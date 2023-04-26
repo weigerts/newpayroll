@@ -1,0 +1,50 @@
+{
+	"name": "tr_npr_colab",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "ppl_sftp_dtl_newpayroll_param",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"p_config_file": "config-HML-Colab.csv"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Week",
+				"interval": 1,
+				"startTime": "2023-03-23T10:00:00",
+				"endTime": "2023-04-30T23:59:00",
+				"timeZone": "E. South America Standard Time",
+				"schedule": {
+					"hours": [
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18
+					],
+					"weekDays": [
+						"Monday",
+						"Tuesday",
+						"Wednesday",
+						"Thursday",
+						"Friday"
+					]
+				}
+			}
+		}
+	}
+}

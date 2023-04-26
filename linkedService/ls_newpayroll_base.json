@@ -1,0 +1,37 @@
+{
+	"name": "ls_newpayroll_base",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"parameters": {
+			"user": {
+				"type": "string"
+			},
+			"pwdsecret": {
+				"type": "string"
+			},
+			"port": {
+				"type": "int"
+			}
+		},
+		"annotations": [],
+		"type": "Sftp",
+		"typeProperties": {
+			"host": "sftp.apdata.com.br",
+			"port": "@linkedService().port",
+			"skipHostKeyValidation": true,
+			"authenticationType": "Basic",
+			"userName": "@{linkedService().user}",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault_apdata",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": {
+					"value": "@linkedService().pwdsecret",
+					"type": "Expression"
+				}
+			}
+		}
+	}
+}

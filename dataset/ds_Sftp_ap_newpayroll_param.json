@@ -1,0 +1,22 @@
+{
+	"name": "ds_Sftp_ap_newpayroll_param",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_newpayroll_base",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"user": "@item().sftpuser",
+				"pwdsecret": "@item().sftppwd",
+				"port": "@int(item().port)"
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "SftpLocation"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

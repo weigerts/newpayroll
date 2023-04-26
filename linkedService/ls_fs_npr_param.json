@@ -1,0 +1,35 @@
+{
+	"name": "ls_fs_npr_param",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"parameters": {
+			"server": {
+				"type": "string"
+			},
+			"path": {
+				"type": "string"
+			},
+			"user": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "FileServer",
+		"typeProperties": {
+			"host": "@{concat(linkedService().server,linkedService().path)}",
+			"userId": "@{linkedService().user}",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault_apdata",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "biz-pwd-uat"
+			}
+		},
+		"connectVia": {
+			"referenceName": "brws0360",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
