@@ -1,0 +1,98 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "elxa3df-NewPayRoll-Dev001"
+		},
+		"AzureKeyVault_apdata_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://kvnpr.vault.azure.net/"
+		},
+		"ls_fs_npr_param_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "@{concat(linkedService().server,linkedService().path)}"
+		},
+		"ls_fs_npr_param_properties_typeProperties_userId": {
+			"type": "string",
+			"defaultValue": "@{linkedService().user}"
+		},
+		"ls_newpayroll_base_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "sftp.apdata.com.br"
+		},
+		"ls_newpayroll_base_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().user}"
+		},
+		"ls_npr_config_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "blob-connection"
+		},
+		"tr_npr_colab_properties_ppl_sftp_dtl_newpayroll_param_parameters_p_config_file": {
+			"type": "string",
+			"defaultValue": "config-HML-Colab.csv"
+		},
+		"tr_npr_hml_properties_ppl_sftp_dtl_newpayroll_param_parameters_p_config_file": {
+			"type": "string",
+			"defaultValue": "config-HML3.csv"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "elxa3df-NewPayRoll-Dev001_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"AzureKeyVault_apdata_properties_typeProperties_baseUrl": {
+						"value": "[parameters('AzureKeyVault_apdata_properties_typeProperties_baseUrl')]"
+					},
+					"ls_fs_npr_param_properties_typeProperties_host": {
+						"value": "[parameters('ls_fs_npr_param_properties_typeProperties_host')]"
+					},
+					"ls_fs_npr_param_properties_typeProperties_userId": {
+						"value": "[parameters('ls_fs_npr_param_properties_typeProperties_userId')]"
+					},
+					"ls_newpayroll_base_properties_typeProperties_host": {
+						"value": "[parameters('ls_newpayroll_base_properties_typeProperties_host')]"
+					},
+					"ls_newpayroll_base_properties_typeProperties_userName": {
+						"value": "[parameters('ls_newpayroll_base_properties_typeProperties_userName')]"
+					},
+					"ls_npr_config_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('ls_npr_config_properties_typeProperties_connectionString_secretName')]"
+					},
+					"tr_npr_colab_properties_ppl_sftp_dtl_newpayroll_param_parameters_p_config_file": {
+						"value": "[parameters('tr_npr_colab_properties_ppl_sftp_dtl_newpayroll_param_parameters_p_config_file')]"
+					},
+					"tr_npr_hml_properties_ppl_sftp_dtl_newpayroll_param_parameters_p_config_file": {
+						"value": "[parameters('tr_npr_hml_properties_ppl_sftp_dtl_newpayroll_param_parameters_p_config_file')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

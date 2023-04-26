@@ -1,0 +1,540 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "elxa3df-NewPayRoll-Dev001"
+		},
+		"AzureKeyVault_apdata_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://kvnpr.vault.azure.net/"
+		},
+		"ls_fs_npr_param_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "@{concat(linkedService().server,linkedService().path)}"
+		},
+		"ls_fs_npr_param_properties_typeProperties_userId": {
+			"type": "string",
+			"defaultValue": "@{linkedService().user}"
+		},
+		"ls_newpayroll_base_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "sftp.apdata.com.br"
+		},
+		"ls_newpayroll_base_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "@{linkedService().user}"
+		},
+		"ls_npr_config_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "blob-connection"
+		},
+		"tr_npr_colab_properties_ppl_sftp_dtl_newpayroll_param_parameters_p_config_file": {
+			"type": "string",
+			"defaultValue": "config-HML-Colab.csv"
+		},
+		"tr_npr_hml_properties_ppl_sftp_dtl_newpayroll_param_parameters_p_config_file": {
+			"type": "string",
+			"defaultValue": "config-HML3.csv"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ppl_sftp_dtl_newpayroll_param')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup_config",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_npr_config",
+								"type": "DatasetReference",
+								"parameters": {
+									"p_config_file": {
+										"value": "@pipeline().parameters.p_config_file",
+										"type": "Expression"
+									}
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup_config",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup_config').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "copy",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "BinarySource",
+											"storeSettings": {
+												"type": "SftpReadSettings",
+												"recursive": true,
+												"deleteFilesAfterCompletion": true,
+												"disableChunking": false
+											},
+											"formatSettings": {
+												"type": "BinaryReadSettings"
+											}
+										},
+										"sink": {
+											"type": "BinarySink",
+											"storeSettings": {
+												"type": "FileServerWriteSettings"
+											}
+										},
+										"enableStaging": false
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_Sftp_ap_newpayroll_param",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_fs_npr_param",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"p_config_file": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-04-26T12:54:12Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_npr_config')]",
+				"[concat(variables('factoryId'), '/datasets/ds_Sftp_ap_newpayroll_param')]",
+				"[concat(variables('factoryId'), '/datasets/ds_fs_npr_param')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_Sftp_ap_newpayroll_param')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_newpayroll_base",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"user": "@item().sftpuser",
+						"pwdsecret": "@item().sftppwd",
+						"port": "@int(item().port)"
+					}
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "SftpLocation"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_newpayroll_base')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_fs_npr_param')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_fs_npr_param",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"server": "@item().server",
+						"path": "@item().path",
+						"user": "@item().bizuser"
+					}
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "FileServerLocation"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_fs_npr_param')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_npr_config')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_npr_config",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"p_config_file": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": {
+							"value": "@dataset().p_config_file",
+							"type": "Expression"
+						},
+						"container": "config"
+					},
+					"columnDelimiter": ";",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "sftpuser",
+						"type": "String"
+					},
+					{
+						"name": "sftppwd",
+						"type": "String"
+					},
+					{
+						"name": "server",
+						"type": "String"
+					},
+					{
+						"name": "path",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_npr_config')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureKeyVault_apdata')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('AzureKeyVault_apdata_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_fs_npr_param')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"server": {
+						"type": "string"
+					},
+					"path": {
+						"type": "string"
+					},
+					"user": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "FileServer",
+				"typeProperties": {
+					"host": "[parameters('ls_fs_npr_param_properties_typeProperties_host')]",
+					"userId": "[parameters('ls_fs_npr_param_properties_typeProperties_userId')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzureKeyVault_apdata",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "biz-pwd-uat"
+					}
+				},
+				"connectVia": {
+					"referenceName": "brws0360",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/brws0360')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVault_apdata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_newpayroll_base')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"user": {
+						"type": "string"
+					},
+					"pwdsecret": {
+						"type": "string"
+					},
+					"port": {
+						"type": "int"
+					}
+				},
+				"annotations": [],
+				"type": "Sftp",
+				"typeProperties": {
+					"host": "[parameters('ls_newpayroll_base_properties_typeProperties_host')]",
+					"port": "@linkedService().port",
+					"skipHostKeyValidation": true,
+					"authenticationType": "Basic",
+					"userName": "[parameters('ls_newpayroll_base_properties_typeProperties_userName')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzureKeyVault_apdata",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": {
+							"value": "@linkedService().pwdsecret",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVault_apdata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_npr_config')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzureKeyVault_apdata",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "[parameters('ls_npr_config_properties_typeProperties_connectionString_secretName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVault_apdata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tr_npr_colab')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "ppl_sftp_dtl_newpayroll_param",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"p_config_file": "[parameters('tr_npr_colab_properties_ppl_sftp_dtl_newpayroll_param_parameters_p_config_file')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Week",
+						"interval": 1,
+						"startTime": "2023-03-23T10:00:00",
+						"endTime": "2023-04-30T23:59:00",
+						"timeZone": "E. South America Standard Time",
+						"schedule": {
+							"hours": [
+								8,
+								9,
+								10,
+								11,
+								12,
+								13,
+								14,
+								15,
+								16,
+								17,
+								18
+							],
+							"weekDays": [
+								"Monday",
+								"Tuesday",
+								"Wednesday",
+								"Thursday",
+								"Friday"
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ppl_sftp_dtl_newpayroll_param')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tr_npr_hml')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "ppl_sftp_dtl_newpayroll_param",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"p_config_file": "[parameters('tr_npr_hml_properties_ppl_sftp_dtl_newpayroll_param_parameters_p_config_file')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Week",
+						"interval": 1,
+						"startTime": "2023-03-27T10:05:00",
+						"endTime": "2023-04-30T11:57:00",
+						"timeZone": "E. South America Standard Time",
+						"schedule": {
+							"minutes": [
+								5
+							],
+							"hours": [
+								8,
+								9,
+								10,
+								11,
+								12,
+								13,
+								14,
+								15,
+								16,
+								17,
+								18
+							],
+							"weekDays": [
+								"Monday",
+								"Tuesday",
+								"Wednesday",
+								"Thursday",
+								"Friday"
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ppl_sftp_dtl_newpayroll_param')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/brws0360')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/irbrws0369')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/default')]",
+			"type": "Microsoft.DataFactory/factories/managedVirtualNetworks",
+			"apiVersion": "2018-06-01",
+			"properties": {},
+			"dependsOn": []
+		}
+	]
+}

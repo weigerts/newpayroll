@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "elxa3df-NewPayRoll-Dev001"
+		},
+		"AzureKeyVault_apdata_properties_typeProperties_baseUrl": {
+			"value": "https://kvnpr.vault.azure.net/"
+		},
+		"ls_fs_npr_param_properties_typeProperties_host": {
+			"value": "@{concat(linkedService().server,linkedService().path)}"
+		},
+		"ls_fs_npr_param_properties_typeProperties_userId": {
+			"value": "@{linkedService().user}"
+		},
+		"ls_newpayroll_base_properties_typeProperties_host": {
+			"value": "sftp.apdata.com.br"
+		},
+		"ls_newpayroll_base_properties_typeProperties_userName": {
+			"value": "@{linkedService().user}"
+		},
+		"ls_npr_config_properties_typeProperties_connectionString_secretName": {
+			"value": "blob-connection"
+		},
+		"tr_npr_colab_properties_ppl_sftp_dtl_newpayroll_param_parameters_p_config_file": {
+			"value": "config-HML-Colab.csv"
+		},
+		"tr_npr_hml_properties_ppl_sftp_dtl_newpayroll_param_parameters_p_config_file": {
+			"value": "config-HML3.csv"
+		}
+	}
+}
